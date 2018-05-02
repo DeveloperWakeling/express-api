@@ -1,0 +1,19 @@
+{
+  "name": "expressapi",
+  "version": "1.0.0",
+  "description": "Node API Using Express",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js"
+  },
+  "author": "Michael Wakeling",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.3",
+    "mongodb": "^3.0.7"
+  },
+  "devDependencies": {
+    "nodemon": "^1.17.3"
+  }
+}
