@@ -16,14 +16,42 @@ module.exports = function (app, db) {
     app.get('/post/:id', (req, res) => {
         //Get the id param
         const o_id = new ObjectId(req.params.id);
-        const details = { '_id':  o_id};
+        const details = { '_id': o_id };
         db.collection('posts').findOne(details, (err, item) => {
-            if(err){
-                res.send({'error': 'An error has occurred'});
+            if (err) {
+                res.send({ 'error': 'An error has occurred' });
             }
             else {
                 res.send(item);
             }
         })
-    })
+    });
+
+    app.delete('/post/:id', (req, res) => {
+        const o_id = new ObjectId(req.params.id);
+        const details = { "_id": o_id };
+        db.collection('posts').remove(details, (err, item) => {
+            if (err) {
+                res.send({ "error": "An error has occurred" });
+            }
+            else {
+                res.send('Post ' + req.params.id + ' deleted!');
+            }
+        });
+    });
+
+    app.put('/post/:id', (req, res) => {
+        const o_id = new ObjectId(req.params.id);
+        const details = { "_id": o_id};
+        const post = { text: req.body.text, title: req.body.title };
+        //takes the query params, the updated information
+        db.collection('posts').update(details, post, (err, item) => {
+            if(err){
+                res.send({ "error" : "An error has occurred"});
+            }
+            else {
+                res.send(post);
+            }
+        });
+    });
 }
