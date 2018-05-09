@@ -13,6 +13,18 @@ module.exports = function (app, db) {
             }
         })
     });
+
+    app.get('/post', (req, res) => {
+       db.collection('posts').find({}).toArray((err, items) => {
+            if(err){
+                res.send({'error': 'An error has occurred' });
+            }
+            else {
+                res.send(items);
+            }
+       });
+    });
+
     app.get('/post/:id', (req, res) => {
         //Get the id param
         const o_id = new ObjectId(req.params.id);
