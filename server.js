@@ -42,7 +42,34 @@ router.route('/user')
                 res.send({ "message": "User Was Created" });
             });
         }
+    })
+    .get((req, res) => {
+        User.find((err, users) => {
+            if(err){
+                res.send(err);
+            }
+            res.json(users);
+        })
     });
+
+router.route('/user/:userid')
+    .get((req, res) => {
+        User.findById(req.params.userid, (err, user) => {
+            if(err){
+                res.send(err);
+            }
+            res.json(user);
+        })
+    })
+    .put((req, res) => {
+        User.findByIdAndUpdate(req.params.userid, req.body, {new: true}, (err, user) => {
+            if(err){
+                res.send(err);
+            }
+            res.json(user);
+        })
+    })
+    
 
 app.use('/api', router);
 
