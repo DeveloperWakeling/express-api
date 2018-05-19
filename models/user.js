@@ -22,7 +22,11 @@ var UserSchema = new Schema({
         unique: true,
         required: true,
         trim: true
-    }
+    },
+    posts: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post'
+    }]
 });
 
 UserSchema.pre('save', function(next) {
@@ -32,6 +36,7 @@ UserSchema.pre('save', function(next) {
           return next(err);
         }
         user.password = hash;
+        user.passwordConf = hash;
         next();
       })
     });

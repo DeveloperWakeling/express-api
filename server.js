@@ -7,6 +7,7 @@ var router = express.Router();
 const app = express();
 const port = 3000;
 var User = require('./models/user');
+var Post = require('./models/post');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 mongoose.connect(db.url);
@@ -58,8 +59,10 @@ router.route('/user/:userid')
             if(err){
                 res.send(err);
             }
-            res.json(user);
-        })
+            // res.json(user);
+        }).populate('posts').exec((err, posts) => {
+            res.send(posts);
+        });
     })
     .put((req, res) => {
         User.findByIdAndUpdate(req.params.userid, req.body, {new: true}, (err, user) => {
@@ -68,6 +71,37 @@ router.route('/user/:userid')
             }
             res.json(user);
         })
+    });
+
+router.route('/post')
+    .post((req, res) => {
+        if(req.body.userid && req.body.title && req.body.body){
+            let post = new Post();
+            post.author = req.body.userid;
+            post.title = req.body.title;
+            post.body = req.body.body;
+            post.save((err) => {
+                if(err){
+                    res.send(err);
+                }
+                User.findById(post.author, (err, user) => {
+                    user.posts.push(post);
+                    user.save();
+                })
+                res.send(post);
+            });
+        }
+    });
+
+router.route('/post/:postid')
+    .get((req, res) => {
+        Post.findById(req.params.postid, (err, post) => {
+            if(err){
+                res.send(err);
+            }
+        }).populate('author', 'username email').exec((err, author) => {
+            res.send(author);
+        });
     })
     
 
