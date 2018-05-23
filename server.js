@@ -6,8 +6,10 @@ var db = require('./config/db');
 var router = express.Router();
 const app = express();
 const port = 3000;
+var jwt = require('jsonwebtoken');
 var User = require('./models/user');
 var Post = require('./models/post');
+var Auth = require('./config/auth');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 mongoose.connect(db.url);
@@ -46,7 +48,7 @@ router.route('/user')
     })
     .get((req, res) => {
         User.find((err, users) => {
-            if(err){
+            if (err) {
                 res.send(err);
             }
             res.json(users);
@@ -56,7 +58,7 @@ router.route('/user')
 router.route('/user/:userid')
     .get((req, res) => {
         User.findById(req.params.userid, (err, user) => {
-            if(err){
+            if (err) {
                 res.send(err);
             }
             // res.json(user);
@@ -65,8 +67,8 @@ router.route('/user/:userid')
         });
     })
     .put((req, res) => {
-        User.findByIdAndUpdate(req.params.userid, req.body, {new: true}, (err, user) => {
-            if(err){
+        User.findByIdAndUpdate(req.params.userid, req.body, { new: true }, (err, user) => {
+            if (err) {
                 res.send(err);
             }
             res.json(user);
@@ -75,13 +77,13 @@ router.route('/user/:userid')
 
 router.route('/post')
     .post((req, res) => {
-        if(req.body.userid && req.body.title && req.body.body){
+        if (req.body.userid && req.body.title && req.body.body) {
             let post = new Post();
             post.author = req.body.userid;
             post.title = req.body.title;
             post.body = req.body.body;
             post.save((err) => {
-                if(err){
+                if (err) {
                     res.send(err);
                 }
                 User.findById(post.author, (err, user) => {
@@ -96,14 +98,39 @@ router.route('/post')
 router.route('/post/:postid')
     .get((req, res) => {
         Post.findById(req.params.postid, (err, post) => {
-            if(err){
+            if (err) {
                 res.send(err);
             }
         }).populate('author', 'username email').exec((err, author) => {
             res.send(author);
         });
-    })
-    
+    });
+
+router.route('/protected')
+    .get(Auth.ensureToken, (req, res) => {
+    res.json({ text: 'protected' });
+});
+
+
+router.route('/login')
+    .post((req, res) => {
+        User.findOne({ username: req.body.username }, (err, user) => {
+            if (err) {
+                res.send({ error: "An error occured" });
+            }
+            user.comparePasswords(req.body.password, function (err, isMatch) {
+                if (err) {
+                    res.send({ error: err });
+                }
+                if(!isMatch){
+                    res.status(401);
+                }
+                const token = jwt.sign({ user }, Auth.secretKey);
+                res.json({ token: token });
+            });
+        })
+    });
+
 
 app.use('/api', router);
 
