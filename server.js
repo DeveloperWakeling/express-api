@@ -108,8 +108,11 @@ router.route('/post/:postid')
 
 router.route('/protected')
     .get(Auth.ensureToken, (req, res) => {
-    res.json({ text: 'protected' });
-});
+        let token = req.token;
+        let tkn = jwt.decode(token);
+        
+        res.json({ token: tkn });
+    });
 
 
 router.route('/login')
@@ -122,7 +125,7 @@ router.route('/login')
                 if (err) {
                     res.send({ error: err });
                 }
-                if(!isMatch){
+                if (!isMatch) {
                     res.status(401);
                 }
                 const token = jwt.sign({ user }, Auth.secretKey);
