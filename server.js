@@ -12,12 +12,15 @@ var Post = require('./models/post');
 var Auth = require('./config/auth');
 
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 mongoose.connect(db.url);
 var db = mongoose.connection;
 
 router.use(function (req, res, next) {
     // do logging
     console.log('Something is happening.');
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next(); // make sure we go to the next routes and don't stop here
 });
 
@@ -121,16 +124,21 @@ router.route('/login')
             if (err) {
                 res.send({ error: "An error occured" });
             }
-            user.comparePasswords(req.body.password, function (err, isMatch) {
-                if (err) {
-                    res.send({ error: err });
-                }
-                if (!isMatch) {
-                    res.status(401);
-                }
-                const token = jwt.sign({ user }, Auth.secretKey);
-                res.json({ token: token });
-            });
+            else if(user === null){
+                res.send("No User Found");
+            }
+            else {
+                user.comparePasswords(req.body.password, function (err, isMatch) {
+                    if (err) {
+                        res.send({ error: err });
+                    }
+                    if (!isMatch) {
+                        res.status(401);
+                    }
+                    const token = jwt.sign({ user }, Auth.secretKey);
+                    res.json({ token: token, loggedIn: true });
+                });
+            }
         })
     });
 
