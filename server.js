@@ -36,6 +36,9 @@ router.route('/user')
             req.body.email) {
 
             let user = new User();
+            if(req.body.name){
+                user.name = req.body.name;
+            }
             user.username = req.body.username;
             user.password = req.body.password;
             user.email = req.body.email;
