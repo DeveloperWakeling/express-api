@@ -46,9 +46,16 @@ router.route('/user')
 
             user.save((err) => {
                 if (err) {
+                    if(err.code === 11000){
+                        res.send({ duplicate: true});
+                    }
                     res.send(err);
                 }
-                res.send({ "message": "User Was Created" });
+                else {
+                    const token = jwt.sign({ user }, Auth.secretKey);
+                    res.json({ token: token, loggedIn: true });
+                }
+                // res.send({ "message": "User Was Created" });
             });
         }
     })
@@ -57,7 +64,9 @@ router.route('/user')
             if (err) {
                 res.send(err);
             }
-            res.json(users);
+            else{
+                res.json(users);
+            }
         })
     });
 
@@ -67,7 +76,6 @@ router.route('/user/:userid')
             if (err) {
                 res.send(err);
             }
-            // res.json(user);
         }).populate('posts').exec((err, posts) => {
             res.send(posts);
         });
