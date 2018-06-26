@@ -1,20 +1,35 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const bunyan = require('bunyan');
+const bunyanLogzioStream = require('logzio-bunyan');
 //Needs to be a var because it can change
 var db = require('./config/db');
 var router = express.Router();
 const app = express();
 const port = 3000;
+var loggerOptions = require('./config/logger').loggerOptions;
 var jwt = require('jsonwebtoken');
 var User = require('./models/user');
 var Post = require('./models/post');
 var Auth = require('./config/auth');
 
+var logzioStream = new bunyanLogzioStream(loggerOptions);
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 mongoose.connect(db.url);
 var db = mongoose.connection;
+
+var logger = bunyan.createLogger({
+    name: 'yaas',
+    streams: [
+        {
+            type: 'raw',
+            stream: logzioStream
+        }
+    ]
+});
 
 router.use(function (req, res, next) {
     // do logging
@@ -25,6 +40,7 @@ router.use(function (req, res, next) {
 });
 
 router.get('/', function (req, res) {
+    // logger.info('Working');
     res.json({ message: 'hooray! welcome to our api!' });
 });
 
