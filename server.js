@@ -39,10 +39,10 @@ router.use(function (req, res, next) {
     next(); // make sure we go to the next routes and don't stop here
 });
 
-router.get('/', function (req, res) {
-    // logger.info('Working');
-    res.json({ message: 'hooray! welcome to our api!' });
-});
+// router.get('/', function (req, res) {
+//     // logger.info('Working');
+//     res.json({ message: 'hooray! welcome to our api!' });
+// });
 
 router.route('/user')
     .post((req, res) => {
@@ -65,7 +65,9 @@ router.route('/user')
                     if(err.code === 11000){
                         res.send({ duplicate: true});
                     }
-                    res.send(err);
+                    else{
+                        res.send(err);
+                    }
                 }
                 else {
                     const token = jwt.sign({ user }, Auth.secretKey);
