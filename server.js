@@ -154,7 +154,7 @@ router.route('/login')
                 res.send({ error: "An error occured" });
             }
             else if(user === null){
-                res.send("No User Found");
+                res.json({err: "No User Found"});
             }
             else {
                 user.comparePasswords(req.body.password, function (err, isMatch) {
@@ -162,10 +162,12 @@ router.route('/login')
                         res.send({ error: err });
                     }
                     if (!isMatch) {
-                        res.status(401);
+                        res.status(401).send({ error: 'Unauthorized'});
                     }
-                    const token = jwt.sign({ user }, Auth.secretKey);
-                    res.json({ token: token, loggedIn: true });
+                    else {
+                        const token = jwt.sign({ user }, Auth.secretKey);
+                        res.json({ token: token, loggedIn: true });
+                    }
                 });
             }
         })
