@@ -18,7 +18,13 @@ var logzioStream = new bunyanLogzioStream(loggerOptions);
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-mongoose.connect(db.url);
+var prod = process.env.NODE_ENV === 'production';
+if(prod){
+    mongoose.connect(db.url);
+}
+else {
+    mongoose.connect(db.localhost_url);
+}
 var db = mongoose.connection;
 
 var logger = bunyan.createLogger({
