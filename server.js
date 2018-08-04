@@ -1,4 +1,5 @@
 const express = require('express');
+var cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const bunyan = require('bunyan');
@@ -18,6 +19,7 @@ var logzioStream = new bunyanLogzioStream(loggerOptions);
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(cors());
 var prod = process.env.NODE_ENV === 'production';
 if(prod){
     mongoose.connect(db.url);
@@ -38,10 +40,7 @@ var logger = bunyan.createLogger({
 });
 
 router.use(function (req, res, next) {
-    // do logging
     console.log('Something is happening.');
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next(); // make sure we go to the next routes and don't stop here
 });
 
@@ -147,9 +146,16 @@ router.route('/post/:postid')
 router.route('/protected')
     .get(Auth.ensureToken, (req, res) => {
         let token = req.token;
-        let tkn = jwt.decode(token);
+        let tkn;
+        try {
+            tkn = jwt.decode(token);
+        }
+        catch(e) {
+            res.status(401).send({error: 'Unauthorized'});
+            return;
+        }
         
-        res.json({ token: tkn });
+        res.send({ token: tkn });
     });
 
 
@@ -171,7 +177,7 @@ router.route('/login')
                         res.status(401).send({ error: 'Unauthorized'});
                     }
                     else {
-                        const token = jwt.sign({ user }, Auth.secretKey);
+                        const token = jwt.sign({ user }, Auth.secretKey,{ expiresIn: '7d'});
                         res.json({ token: token, loggedIn: true });
                     }
                 });
