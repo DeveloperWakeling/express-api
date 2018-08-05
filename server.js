@@ -154,8 +154,12 @@ router.route('/protected')
             res.status(401).send({error: 'Unauthorized'});
             return;
         }
-        
-        res.send({ token: tkn });
+        if(tkn != null){
+            res.send({ token: tkn });
+        }
+        else {
+            res.status(401).send({error: 'Unauthorized'});
+        }
     });
 
 
