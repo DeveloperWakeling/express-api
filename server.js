@@ -22,11 +22,12 @@ app.use(bodyParser.json());
 app.use(cors());
 var prod = process.env.NODE_ENV === 'production';
 if(prod){
-    mongoose.connect(db.url);
+    mongoose.connect(db.url, {useNewUrlParser: true});
 }
 else {
-    mongoose.connect(db.localhost_url);
+    mongoose.connect(db.localhost_url, {useNewUrlParser: true});
 }
+mongoose.set('useCreateIndex', true);
 var db = mongoose.connection;
 
 var logger = bunyan.createLogger({
@@ -167,18 +168,18 @@ router.route('/login')
     .post((req, res) => {
         User.findOne({ username: req.body.username }, (err, user) => {
             if (err) {
-                res.send({ error: "An error occured" });
+                res.send({ error: "An error occured", loginError: true });
             }
             else if(user === null){
-                res.json({err: "No User Found"});
+                res.json({err: "No User Found", loginError: true });
             }
             else {
                 user.comparePasswords(req.body.password, function (err, isMatch) {
                     if (err) {
-                        res.send({ error: err });
+                        res.send({ error: err, loginError: true  });
                     }
                     if (!isMatch) {
-                        res.status(401).send({ error: 'Unauthorized'});
+                        res.status(401).send({ error: 'Unauthorized', loginError: true });
                     }
                     else {
                         const token = jwt.sign({ user }, Auth.secretKey,{ expiresIn: '7d'});
